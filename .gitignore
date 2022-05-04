@@ -1,0 +1,15 @@
+### FILES
+*.[oa]
+*~
+*.m
+*.sh
+*.out
+*.dat
+*.txt
+*.bin
+*.swp
+*.gch
+*.#
+octave-workspace
+.DS_Store
+._.*

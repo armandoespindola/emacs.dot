@@ -1,0 +1,205 @@
+#+STARTUP: content
+
+# This is a lightweight configuration for emacs
+# Some parts are taken from https://github.com/hrs (Harry R. Schwartz)
+
+* Configure =use-package=
+
+We use =use-package= to install and configure every package.
+
+#+begin_src emacs-lisp
+  (require 'use-package-ensure)
+  (setq use-package-always-ensure t)
+  (scroll-bar-mode -1)
+#+end_src
+* ORG
+#+begin_src emacs-lisp
+  (use-package org)
+#+end_src
+* Hide all minor modes
+#+BEGIN_SRC emacs-lisp
+  (use-package minions
+    :config
+    (setq minions-mode-line-lighter "⚙"
+	  minions-mode-line-delimiters (cons "" ""))
+    (minions-mode 1))
+#+END_SRC
+
+* Configure a mode line
+#+BEGIN_SRC emacs-lisp
+(use-package moody
+  :config
+  (setq x-underline-at-descent-line t)
+  (moody-replace-mode-line-buffer-identification)
+  (moody-replace-vc-mode))
+#+END_SRC
+
+* Window preferences
+#+begin_src emacs-lisp
+  (tool-bar-mode 0)
+  (menu-bar-mode 0)
+  (scroll-bar-mode -1)
+#+end_src
+
+#+begin_src emacs-lisp
+(global-hl-line-mode)
+#+end_src
+
+* Theme
+
+Personal theme
+#+begin_src emacs-lisp
+	(use-package monokai-theme
+	  :ensure t
+	  :config
+	  (load-theme 'monokai t))
+
+      (setq ;; foreground and background
+	    monokai-foreground     "#ABB2BF"
+	    monokai-background     "#282C34"
+	    ;; highlights and comments
+	    monokai-comments       "#F8F8F0"
+	    monokai-emphasis       "#282C34"
+	    monokai-highlight      "#FFB269"
+	    monokai-highlight-alt  "#66D9EF"
+	    monokai-highlight-line "#1B1D1E"
+	    monokai-line-number    "#F8F8F0"
+	    ;; colours
+	    monokai-blue           "#61AFEF"
+	    monokai-cyan           "#56B6C2"
+	    monokai-green          "#98C379"
+	    monokai-gray           "#3E4451"
+	    monokai-violet         "#C678DD"
+	    monokai-red            "#E06C75"
+	    monokai-orange         "#D19A66"
+	    monokai-yellow         "#E5C07B")
+
+       ;;  (use-package zenburn-theme
+  ;; 	:ensure t)
+
+  ;;     (setq zenburn-override-colors-alist
+  ;; 	'(("zenburn-bg+05" . "#282828")
+  ;; 	  ("zenburn-bg+1"  . "#2F2F2F")
+  ;; 	  ("zenburn-bg+2"  . "#3F3F3F")
+  ;; 	  ("zenburn-bg+3"  . "#4F4F4F")))
+  ;; ;; use variable-pitch fonts for some headings and titles
+  ;; (setq zenburn-use-variable-pitch t)
+
+  ;; ;; scale headings in org-mode
+  ;; (setq zenburn-scale-org-headlines t)
+
+  ;; ;; scale headings in outline-mode
+  ;; (setq zenburn-scale-outline-headlines t)
+
+  ;; (load-theme 'zenburn t)
+
+#+end_src
+
+* Company mode
+   #+BEGIN_SRC emacs-lisp
+     (use-package company
+       :custom
+       (company-idle-delay 0)
+       (company-tooltip-align-annotations t)
+       :config
+       (add-hook 'prog-mode-hook 'company-mode))
+   #+END_SRC
+
+Company-box adds semantic icons to the company completion menu
+
+#+begin_src emacs-lisp
+(use-package company-box
+  :after company
+  :hook (company-mode . company-box-mode))
+#+end_src
+* Projectile
+
+#+begin_src emacs-lisp
+  (use-package ag)
+
+  (use-package projectile
+    :bind
+    ("C-c v" . projectile-ag)
+
+    :config
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    (setq projectile-completion-system 'ivy
+	  projectile-switch-project-action 'projectile-dired
+	  projectile-require-project-root nil))
+
+  (projectile-global-mode)
+#+end_src
+
+* Configure ivy and counsel
+
+#+begin_src emacs-lisp
+  (use-package counsel
+  :bind
+  ("M-x" . 'counsel-M-x)
+  ("C-s" . 'swiper)
+
+  :config
+  (use-package flx)
+  (use-package smex)
+
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-count-format "(%d/%d) ")
+  (setq ivy-initial-inputs-alist nil)
+  (setq ivy-re-builders-alist
+        '((swiper . ivy--regex-plus)
+          (t . ivy--regex-fuzzy))))
+#+end_src
+
+* Flycheck
+   #+BEGIN_SRC emacs-lisp
+     (use-package let-alist)
+     (use-package flycheck
+       :init (global-flycheck-mode))
+   #+END_SRC
+
+* File management with dired
+#+BEGIN_SRC emacs-lisp
+  (use-package dired-hide-dotfiles
+    :config
+    (dired-hide-dotfiles-mode)
+    (define-key dired-mode-map "." 'dired-hide-dotfiles-mode))
+#+END_SRC
+
+Kill the current buffer when selecting a new directory
+
+#+BEGIN_SRC emacs-lisp
+(setq dired-kill-when-opening-new-dired-buffer t)
+#+END_SRC
+
+* Configure yasnippet
+#+BEGIN_SRC emacs-lisp
+  (use-package yasnippet)
+  (use-package yasnippet-snippets)
+  ;(setq yas-snippet-dirs '("~/.emacs.d/snippets/text-mode"))
+  (yas-global-mode 1)
+  (setq yas-indent-line 'auto)
+#+END_SRC
+
+
+#+BEGIN_SRC emacs-lisp
+(use-package magit
+  :bind
+  ("C-x g" . magit-status)
+
+  :config
+  (use-package with-editor))
+#+END_SRC
+
+* PDF Tools
+  #+BEGIN_SRC emacs-lisp
+    (use-package pdf-tools
+      :config
+      (pdf-tools-install)
+      ;; This means that pdfs are fitted to width by default when you open them
+      (setq-default pdf-view-display-size 'fit-width)
+      :custom
+      (pdf-annot-activate-created-annotations t "automatically annotate highlights"))
+
+    (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
+  #+END_SRC
