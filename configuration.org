@@ -1,8 +1,4 @@
 #+STARTUP: content
-
-# This is a lightweight configuration for emacs
-# Some parts are taken from https://github.com/hrs (Harry R. Schwartz)
-
 * Configure =use-package=
 
 We use =use-package= to install and configure every package.
@@ -16,6 +12,8 @@ We use =use-package= to install and configure every package.
 #+begin_src emacs-lisp
   (use-package org)
 #+end_src
+* UI preferences
+* Personal configuration
 * Hide all minor modes
 #+BEGIN_SRC emacs-lisp
   (use-package minions
@@ -45,6 +43,10 @@ We use =use-package= to install and configure every package.
 (global-hl-line-mode)
 #+end_src
 
+* Fancy lambdas
+#+BEGIN_SRC emacs-lisp
+(global-prettify-symbols-mode t)
+#+END_SRC
 * Theme
 
 Personal theme
@@ -95,6 +97,7 @@ Personal theme
 
 #+end_src
 
+* Project Management
 * Company mode
    #+BEGIN_SRC emacs-lisp
      (use-package company
@@ -191,6 +194,73 @@ Kill the current buffer when selecting a new directory
   (use-package with-editor))
 #+END_SRC
 
+* Org-ref
+   #+BEGIN_SRC emacs-lisp
+     (use-package helm-bibtex)
+     (use-package org-ref)
+
+     (setq bibtex-completion-bibliography '("~/Dropbox/emacs/bibliography/library.bib")
+	 bibtex-completion-library-path '("~/Dropbox/emacs/bibliography/bibtex-pdfs/")
+	   bibtex-completion-notes-path "~/Dropbox/emacs/bibliography/notes/"
+	   bibtex-completion-notes-template-multiple-files "* ${author-or-editor}, ${title}, ${journal}, (${year}) :${=type=}: \n\nSee [[cite:&${=key=}]]\n"
+
+	   bibtex-completion-additional-search-fields '(keywords)
+	   bibtex-completion-display-formats
+	   '((article       . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
+	     (inbook        . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+	     (incollection  . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+	     (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+	     (t             . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
+	   bibtex-completion-pdf-open-function
+	   (lambda (fpath)
+	     (call-process "open" nil 0 nil fpath)))
+
+     (setq org-ref-default-citation-link "citep")
+
+
+     (require 'org-ref-helm)
+
+     (setq org-ref-insert-link-function 'org-ref-insert-link-hydra/body
+	   org-ref-insert-cite-function 'org-ref-cite-insert-helm
+	   org-ref-insert-label-function 'org-ref-insert-label-link
+	   org-ref-insert-ref-function 'org-ref-insert-ref-link
+	   org-ref-cite-onclick-function (lambda (_) (org-ref-citation-hydra/body)))
+
+     ;; to show availability of pdf and notes
+     (setq bibtex-completion-pdf-symbol "⌘")
+     (setq bibtex-completion-notes-symbol "✎")
+
+     (define-key org-mode-map (kbd "C-c ]") 'org-ref-insert-cite-link)
+     (define-key org-mode-map (kbd "C-u C-c ]") 'org-ref-insert-ref-link)
+     (define-key org-mode-map (kbd "C-u C-u C-c ]") 'org-ref-insert-label-link)
+
+
+
+     (require 'bibtex)
+     (setq bibtex-autokey-year-length 4
+	   bibtex-autokey-name-year-separator "-"
+	   bibtex-autokey-year-title-separator "-"
+	   bibtex-autokey-titleword-separator "-"
+	   bibtex-autokey-titlewords 2
+	   bibtex-autokey-titlewords-stretch 1
+	   bibtex-autokey-titleword-length 5)
+
+     ;; (setq org-latex-pdf-process
+     ;;       '("pdflatex -interaction nonstopmode -output-directory %o %f"
+     ;; 	"bibtex %b"
+     ;; 	"pdflatex -interaction nonstopmode -output-directory %o %f"
+     ;; 	"pdflatex -interaction nonstopmode -output-directory %o %f"))
+
+     (setq org-latex-pdf-process '("latexmk -pdflatex='%latex -shell-escape -interaction nonstopmode' -pdf -output-directory=%o -f %f"))
+    ;; (setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f"))
+
+     ;; Quotes Exporting
+     (setq org-export-latex-quotes t)
+     ;; Labels for figures
+     (setq org-latex-prefer-user-labels t)
+
+   #+END_SRC
+   
 * PDF Tools
   #+BEGIN_SRC emacs-lisp
     (use-package pdf-tools
@@ -203,3 +273,64 @@ Kill the current buffer when selecting a new directory
 
     (add-hook 'pdf-view-mode-hook 'auto-revert-mode)
   #+END_SRC
+* Personal Data
+  #+BEGIN_SRC emacs-lisp
+    (load-file "~/.emacs.d/personal_config.el")
+  #+END_SRC
+
+* Notes (Capture)
+#+BEGIN_SRC emacs-lisp
+(setq org-default-notes-file "~/Dropbox/Emacs/org/Notes/notes.org")
+(global-set-key (kbd "\C-c c") #'org-capture)
+#+END_SRC
+
+* Org-Roam
+#+BEGIN_SRC emacs-lisp
+	(use-package org-roam
+	  :ensure t
+	  :custom
+	  (org-roam-directory (file-truename "~/Dropbox/Emacs/org/slip-box/"))
+	  :bind (("C-c n l" . org-roam-buffer-toggle)
+		 ("C-c n f" . org-roam-node-find)
+		 ("C-c n g" . org-roam-graph)
+		 ("C-c n i" . org-roam-node-insert)
+		 ("C-c n c" . org-roam-capture)
+		 ;; Dailies
+		 ("C-c n j" . org-roam-dailies-capture-today))
+	  :config
+	  ;; If you're using a vertical completion framework, you might want a more informative completion interface
+	  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+	  (org-roam-db-autosync-mode)
+	  ;; If using org-roam-protocol
+	  (require 'org-roam-protocol))
+
+
+    ;; org-roam-bibtex
+    (use-package org-roam-bibtex
+      :after org-roam
+      :config
+      (setq orb-insert-interface 'helm-bibtex)
+      (require 'org-ref))
+
+
+  ;; roam templates
+(setq org-roam-capture-templates
+        `(("d" "default" plain
+           "%?"
+           :target (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                              "#+title: ${title}\n#+created: %U\n#+last_modified: %U\n\n")
+           :unnarrowed t)
+          ("r" "ref" plain
+           "%?"
+           :target (file+head "${citekey}.org"
+                              "#+title: ${title}\n#+created: %U\n#+last_modified: %U\n\n")
+           :unnarrowed t)))
+#+END_SRC
+
+* Agenda
+  #+BEGIN_SRC emacs-lisp
+
+    (setq org-agenda-files '("/Users/espinda/Dropbox/Emacs/org/agenda.org"))
+
+  #+END_SRC
+  
