@@ -23,14 +23,17 @@ We use =use-package= to install and configure every package.
       (add-hook 'vterm-mode-hook
 		(lambda () (setq-local global-hl-line-mode nil)))
 
-      (global-set-key (kbd "C-c t") 'vterm)
-      :custom
-      (vterm-shell "bash" "Set to bash instead of the default $SHELL so that vterm from TRAMP uses bash."))
+      (global-set-key (kbd "C-c t") 'vterm))
+  (add-to-list 'vterm-tramp-shells '("ssh" "/bin/bash"))
+  (add-to-list 'vterm-tramp-shells '("sudo" "/bin/bash"))
 
     (use-package vterm-toggle
     :bind
     ("<f10>" . vterm-toggle)
-    ("C-`" . vterm-toggle))
+    ("C-`" . vterm-toggle-cd))
+
+  (global-set-key (kbd "s-n") 'vterm-toggle-forward)
+  (global-set-key (kbd "s-p") 'vterm-toggle-backward)
 
   (setq vterm-toggle-fullscreen-p nil)
   (add-to-list 'display-buffer-alist
@@ -130,7 +133,7 @@ Personal theme
 ** Font configuration
 #+begin_src emacs-lisp
     (set-face-attribute 'default nil
-		      :height 170)
+		      :height 120)
 
 ;;  (set-face-background 'hl-line "#E47200")
   (use-package default-text-scale
