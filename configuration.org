@@ -61,6 +61,8 @@ We use =use-package= to install and configure every package.
 		    (reusable-frames . visible)
 		    (window-height . 0.3)))
 
+  (use-package multi-vterm :ensure t)
+
 #+end_src
 * Hide all minor modes
 #+BEGIN_SRC emacs-lisp
